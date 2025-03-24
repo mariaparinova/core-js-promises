@@ -17,8 +17,14 @@
  * 0    => promise that will be fulfilled
  * 1    => promise that will be fulfilled
  */
-function getPromise(/* number */) {
-  throw new Error('Not implemented');
+function getPromise(number) {
+  return new Promise((resolve, reject) => {
+    if (number >= 0) {
+      resolve(number);
+    }
+
+    reject(new Error('"number" should be zero or greater'));
+  });
 }
 
 /**
@@ -33,8 +39,8 @@ function getPromise(/* number */) {
  * Promise.resolve('success') => promise that will be fulfilled with 'success' value
  * Promise.reject('fail')     => promise that will be fulfilled with 'fail' value
  */
-function getPromiseResult(/* source */) {
-  throw new Error('Not implemented');
+function getPromiseResult(source) {
+  return source.then(() => 'success').catch(() => 'fail');
 }
 
 /**
@@ -50,8 +56,8 @@ function getPromiseResult(/* source */) {
  * [Promise.resolve(1), Promise.reject(2), Promise.resolve(3)]  => Promise fulfilled with 1
  * [Promise.reject(1), Promise.reject(2), Promise.reject(3)]    => Promise rejected
  */
-function getFirstResolvedPromiseResult(/* promises */) {
-  throw new Error('Not implemented');
+function getFirstResolvedPromiseResult(promises) {
+  return Promise.any(promises);
 }
 
 /**
@@ -73,8 +79,8 @@ function getFirstResolvedPromiseResult(/* promises */) {
  * [promise3, promise6, promise2] => Promise rejected with 2
  * [promise3, promise4, promise6] => Promise rejected with 6
  */
-function getFirstPromiseResult(/* promises */) {
-  throw new Error('Not implemented');
+function getFirstPromiseResult(promises) {
+  return Promise.race(promises);
 }
 
 /**
@@ -88,8 +94,8 @@ function getFirstPromiseResult(/* promises */) {
  * [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)] => Promise fulfilled with [1, 2, 3]
  * [Promise.resolve(1), Promise.reject(2), Promise.resolve(3)] => Promise rejected with 2
  */
-function getAllOrNothing(/* promises */) {
-  throw new Error('Not implemented');
+function getAllOrNothing(promises) {
+  return Promise.all(promises);
 }
 
 /**
@@ -104,8 +110,12 @@ function getAllOrNothing(/* promises */) {
  * [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)] => Promise fulfilled with [1, 2, 3]
  * [Promise.resolve(1), Promise.reject(2), Promise.resolve(3)]  => Promise fulfilled with [1, null, 3]
  */
-function getAllResult(/* promises */) {
-  throw new Error('Not implemented');
+function getAllResult(promises) {
+  return Promise.allSettled(promises).then((results) => {
+    return results.map((result) =>
+      result.status === 'fulfilled' ? result.value : null
+    );
+  });
 }
 
 /**
@@ -114,7 +124,7 @@ function getAllResult(/* promises */) {
  * Static methods of the Promise class are not to be used, necessitating a manual chaining approach to ensure sequential processing.
  *
  * @param {Array<Promise<number>>} promises
- * @return {Promise<string>}
+ * @return {Promise<number>}
  *
  * @example:
  * const promise1 = Promise.resolve(10)
@@ -126,8 +136,23 @@ function getAllResult(/* promises */) {
  * [promise1, promise4, promise3] => Promise.resolved('104030')
  * [promise1, promise4, promise3, promise2] => Promise.resolved('10403020')
  */
-function queuePromises(/* promises */) {
-  throw new Error('Not implemented');
+function queuePromises(promises) {
+  let resolvedPromisesCounter = 0;
+
+  return new Promise((resolve) => {
+    const result = [];
+
+    promises.forEach((p, index) => {
+      p.then((str) => {
+        resolvedPromisesCounter += 1;
+        result[index] = str;
+
+        if (resolvedPromisesCounter === promises.length) {
+          resolve(result.join(''));
+        }
+      });
+    });
+  });
 }
 
 module.exports = {
